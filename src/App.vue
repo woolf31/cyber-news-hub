@@ -100,6 +100,7 @@
             :keywords="keywords"
             :selectedKeywords="selectedKeywords"
             @keywordSelect="toggleKeyword"
+            @addCustomKeyword="addCustomKeyword"
           />
           <NewsContainer
             :search="searchQuery"
@@ -116,7 +117,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useStorage } from '@vueuse/core';
 import { supabase } from './lib/supabase';
 import NewsContainer from './components/NewsContainer.vue';
@@ -129,8 +130,11 @@ const showUserMenu = ref(false);
 const isDark = useStorage('cyber-news-dark-mode', false);
 const searchQuery = ref('');
 const sortBy = ref('date');
-const keywords = ref(['cybersecurity', 'malware', 'ransomware', 'privacy', 'data breach']);
-const selectedKeywords = ref([]);
+// Default and custom keywords
+const defaultKeywords = ['cybersecurity', 'malware', 'ransomware', 'privacy', 'data breach', 'hack', 'vulnerability', 'APT'];
+const customKeywords = useStorage('cyber-news-custom-keywords', []);
+const keywords = computed(() => [...defaultKeywords, ...customKeywords.value]);
+const selectedKeywords = useStorage('cyber-news-selected-keywords', []);
 
 // Handle click outside user menu
 const handleClickOutside = (event) => {
@@ -181,6 +185,7 @@ const toggleDarkMode = () => {
   document.documentElement.classList.toggle('dark');
 };
 
+// Keyword management
 const toggleKeyword = (keyword) => {
   const index = selectedKeywords.value.indexOf(keyword);
   if (index === -1) {
@@ -188,10 +193,37 @@ const toggleKeyword = (keyword) => {
   } else {
     selectedKeywords.value.splice(index, 1);
   }
+  
+  // Remove from custom keywords if it was a custom keyword
+  if (!defaultKeywords.includes(keyword) && !selectedKeywords.value.includes(keyword)) {
+    const customIndex = customKeywords.value.indexOf(keyword);
+    if (customIndex !== -1) {
+      customKeywords.value.splice(customIndex, 1);
+    }
+  }
+};
+
+// Add custom keyword
+const addCustomKeyword = (keyword) => {
+  if (!keywords.value.includes(keyword)) {
+    customKeywords.value.push(keyword);
+  }
+  if (!selectedKeywords.value.includes(keyword)) {
+    selectedKeywords.value.push(keyword);
+  }
 };
 
 const refreshNews = () => {
   // Emit event to refresh news list
   window.dispatchEvent(new CustomEvent('refresh-news'));
 };
+
+// Watch for dark mode changes
+watch(isDark, (newValue) => {
+  if (newValue) {
+    document.documentElement.classList.add('dark');
+  } else {
+    document.documentElement.classList.remove('dark');
+  }
+}, { immediate: true });
 </script>

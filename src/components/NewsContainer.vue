@@ -99,34 +99,68 @@ const container = ref(null);
 // Store last refresh time
 const lastRefresh = useStorage('cyber-news-last-refresh', 0);
 
+// Calculate relevance score for search
+const calculateRelevance = (item, searchTerms) => {
+  let score = 0;
+  const content = `${item.title} ${item.description}`.toLowerCase();
+  
+  searchTerms.forEach(term => {
+    // Title matches worth more
+    const titleMatches = (item.title.toLowerCase().match(new RegExp(term, 'g')) || []).length;
+    score += titleMatches * 3;
+    
+    // Description matches
+    const descMatches = (item.description.toLowerCase().match(new RegExp(term, 'g')) || []).length;
+    score += descMatches;
+  });
+  
+  return score;
+};
+
 // Filter and sort news
 const filteredNews = computed(() => {
   let filtered = [...(news.value || [])];
 
   // Apply search filter
-  if (props.search) {
-    const searchLower = props.search.toLowerCase();
-    filtered = filtered.filter(item => 
-      item.title.toLowerCase().includes(searchLower) ||
-      item.description.toLowerCase().includes(searchLower)
-    );
+  if (props.search.trim()) {
+    const searchTerms = props.search.toLowerCase().split(/\s+/).filter(Boolean);
+    filtered = filtered.filter(item => {
+      const content = `${item.title} ${item.description}`.toLowerCase();
+      return searchTerms.every(term => content.includes(term));
+    });
+    
+    // Add relevance scores
+    filtered.forEach(item => {
+      item.relevance = calculateRelevance(item, searchTerms);
+    });
   }
 
   // Apply keyword filters
   if (props.selectedKeywords.length > 0) {
     filtered = filtered.filter(item => {
       const content = `${item.title} ${item.description}`.toLowerCase();
-      return props.selectedKeywords.some(keyword => 
+      return props.selectedKeywords.every(keyword => 
         content.includes(keyword.toLowerCase())
       );
     });
   }
 
   // Apply sorting
-  if (props.sortBy === 'date') {
-    filtered.sort((a, b) => new Date(b.published_at) - new Date(a.published_at));
-  } else if (props.sortBy === 'source') {
-    filtered.sort((a, b) => a.source.localeCompare(b.source));
+  switch (props.sortBy) {
+    case 'date':
+      filtered.sort((a, b) => new Date(b.published_at) - new Date(a.published_at));
+      break;
+    case 'date-asc':
+      filtered.sort((a, b) => new Date(a.published_at) - new Date(b.published_at));
+      break;
+    case 'source':
+      filtered.sort((a, b) => a.source.localeCompare(b.source));
+      break;
+    case 'relevance':
+      if (props.search.trim()) {
+        filtered.sort((a, b) => (b.relevance || 0) - (a.relevance || 0));
+      }
+      break;
   }
 
   return filtered;

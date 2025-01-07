@@ -3,12 +3,15 @@
     <div class="space-y-4">
       <!-- Search input -->
       <div>
+        <label class="block text-sm text-gray-600 dark:text-gray-400 mb-1">
+          Search in title and description:
+        </label>
         <div class="relative">
           <input
             type="text"
             :value="search"
             @input="$emit('update:search', $event.target.value)"
-            placeholder="Search news..."
+            placeholder="Search news"
             class="input pl-10"
           />
           <svg
@@ -26,6 +29,9 @@
             />
           </svg>
         </div>
+        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+          Separate multiple terms with spaces
+        </p>
       </div>
 
       <!-- Sort options -->
@@ -36,8 +42,10 @@
           @change="$emit('update:sortBy', $event.target.value)"
           class="input !w-auto"
         >
-          <option value="date">Date</option>
+          <option value="date">Date (newest first)</option>
+          <option value="date-asc">Date (oldest first)</option>
           <option value="source">Source</option>
+          <option value="relevance">Relevance</option>
         </select>
       </div>
 
@@ -46,7 +54,7 @@
         <label class="block text-sm text-gray-600 dark:text-gray-400 mb-2">
           Filter by keywords:
         </label>
-        <div class="flex flex-wrap gap-2">
+        <div class="flex flex-wrap gap-2 mb-2">
           <button
             v-for="keyword in keywords"
             :key="keyword"
@@ -61,13 +69,60 @@
             {{ keyword }}
           </button>
         </div>
+
+        <!-- Custom keyword input -->
+        <div class="flex gap-2">
+          <input
+            v-model="newKeyword"
+            type="text"
+            placeholder="Add custom keyword..."
+            class="input flex-1"
+            @keyup.enter="addCustomKeyword"
+          />
+          <button
+            @click="addCustomKeyword"
+            class="btn btn-primary"
+            :disabled="!newKeyword.trim()"
+          >
+            Add
+          </button>
+        </div>
+      </div>
+
+      <!-- Active filters -->
+      <div v-if="hasActiveFilters" class="border-t dark:border-gray-700 pt-4">
+        <div class="flex items-center justify-between">
+          <span class="text-sm text-gray-600 dark:text-gray-400">Active filters:</span>
+          <button
+            @click="clearFilters"
+            class="text-sm text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
+          >
+            Clear all
+          </button>
+        </div>
+        <div class="mt-2 flex flex-wrap gap-2">
+          <span
+            v-for="keyword in selectedKeywords"
+            :key="keyword"
+            class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+          >
+            {{ keyword }}
+            <button
+              @click="$emit('keywordSelect', keyword)"
+              class="hover:text-blue-600 dark:hover:text-blue-300"
+            >
+              ×
+            </button>
+          </span>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { defineProps, defineEmits } from 'vue';
+import { ref, computed, defineProps, defineEmits } from 'vue';
+import { useStorage } from '@vueuse/core';
 
 const props = defineProps({
   search: {
@@ -88,9 +143,32 @@ const props = defineProps({
   }
 });
 
-defineEmits(['update:search', 'update:sortBy', 'keywordSelect']);
+const emit = defineEmits(['update:search', 'update:sortBy', 'keywordSelect', 'addCustomKeyword']);
+
+// Custom keywords storage
+const customKeywords = useStorage('cyber-news-custom-keywords', []);
+const newKeyword = ref('');
+
+const addCustomKeyword = () => {
+  const keyword = newKeyword.value.trim().toLowerCase();
+  if (keyword) {
+    emit('addCustomKeyword', keyword);
+    newKeyword.value = '';
+  }
+};
 
 const isSelected = (keyword) => {
   return props.selectedKeywords.includes(keyword);
+};
+
+const hasActiveFilters = computed(() => {
+  return props.selectedKeywords.length > 0 || props.search.trim().length > 0;
+});
+
+const clearFilters = () => {
+  props.selectedKeywords.forEach(keyword => {
+    emit('keywordSelect', keyword);
+  });
+  emit('update:search', '');
 };
 </script>
