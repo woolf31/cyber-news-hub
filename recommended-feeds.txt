@@ -1,0 +1,35 @@
+Recommended Cybersecurity RSS Feeds:
+
+1. Krebs on Security
+https://krebsonsecurity.com/feed/
+
+2. The Hacker News
+https://feeds.feedburner.com/TheHackersNews
+
+3. Threatpost
+https://threatpost.com/feed/
+
+4. Dark Reading
+https://www.darkreading.com/rss.xml
+
+5. Naked Security by Sophos
+https://nakedsecurity.sophos.com/feed/
+
+6. Security Week
+https://feeds.feedburner.com/SecurityWeek
+
+7. CISA Alerts
+https://www.cisa.gov/uscert/ncas/alerts.xml
+
+8. Bleeping Computer
+https://www.bleepingcomputer.com/feed/
+
+9. The Register - Security
+https://www.theregister.com/security/headlines.atom
+
+10. ZDNet Security
+https://www.zdnet.com/topic/security/rss.xml
+
+These feeds provide a comprehensive coverage of cybersecurity news, threats, vulnerabilities, and industry updates. You can add these feeds to your application through the "Add RSS Feed" form.
+
+Note: Some feeds might require CORS proxy handling on the server side due to cross-origin restrictions.
