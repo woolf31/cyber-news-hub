@@ -23,6 +23,8 @@ A web application for aggregating and displaying cybersecurity news from various
 
 ## Setup
 
+### Local Development
+
 1. Clone the repository:
    ```bash
    git clone https://github.com/woolf31/cyber-news-hub.git
@@ -43,18 +45,55 @@ A web application for aggregating and displaying cybersecurity news from various
    ```bash
    cp .env.example .env
    ```
-   Then edit `.env` with your Supabase credentials
+   For local development, use these settings:
+   ```
+   VITE_SUPABASE_URL=your-supabase-url
+   VITE_SUPABASE_ANON_KEY=your-supabase-key
+   NODE_ENV=development
+   VITE_API_URL=http://localhost:5000
+   VITE_APP_URL=http://localhost:5173
+   ```
 
 5. Start the development server:
    ```bash
    npm run dev
    ```
 
+### Vercel Deployment
+
+1. Push your code to GitHub
+
+2. Create a new project on Vercel:
+   - Connect your GitHub repository
+   - Set the Framework Preset to "Other"
+   - Set the Build Command to `npm run vercel-build`
+   - Set the Output Directory to `dist`
+
+3. Configure environment variables in Vercel:
+   - Go to Project Settings > Environment Variables
+   - Add all variables from `.env.example`
+   - Set `VITE_APP_URL` and `VITE_API_URL` to your Vercel domain
+   - Set `NODE_ENV` to `production`
+
+4. Deploy:
+   - Vercel will automatically deploy when you push to your main branch
+   - You can also manually deploy from the Vercel dashboard
+
+5. After deployment:
+   - Update your Supabase project settings to allow your Vercel domain
+   - Test the application thoroughly
+
 ## Environment Variables
 
+### Required Variables
 - `VITE_SUPABASE_URL`: Your Supabase project URL
 - `VITE_SUPABASE_ANON_KEY`: Your Supabase anonymous key
-- `PORT`: Server port (default: 5000)
+- `VITE_APP_URL`: Your application URL (Vercel domain in production)
+- `VITE_API_URL`: Your API URL (same as APP_URL in production)
+- `NODE_ENV`: Environment (`development` or `production`)
+
+### Development Variables
+- `PORT`: Server port (default: 5000) - only needed for local development
 
 ## Development
 
