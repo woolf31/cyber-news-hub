@@ -208,16 +208,16 @@ const fetchNews = async () => {
 };
 
 // Auto-refresh setup
-const REFRESH_INTERVAL = 5 * 60 * 1000; // 5 minutes
+const REFRESH_INTERVAL = 30 * 60 * 1000; // 30 minutes
 let refreshInterval;
 
 // Initial fetch and refresh setup
 onMounted(async () => {
   console.log('NewsContainer mounted');
   
-  // Check if we need to refresh (older than 5 minutes)
+  // Check if we need to refresh (older than 30 minutes)
   const now = Date.now();
-  if (now - lastRefresh.value > 5 * 60 * 1000) {
+  if (now - lastRefresh.value > REFRESH_INTERVAL) {
     try {
       await api.refreshNews();
     } catch (err) {
